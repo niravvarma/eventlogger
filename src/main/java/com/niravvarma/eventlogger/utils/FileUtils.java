@@ -3,13 +3,10 @@ package com.niravvarma.eventlogger.utils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.niravvarma.eventlogger.domain.EventLog;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.LineIterator;
 import org.json.JSONObject;
 import org.springframework.util.StringUtils;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -33,7 +30,13 @@ public class FileUtils {
     public static final int DURATION_THRESHOLD = 4;
 
     public static List<EventLog> parseEventLogs(String eventLogsPath) {
-        Map<String, JSONObject> eventInputLogMap = getEventLogs(eventLogsPath);
+        Map<String, JSONObject> eventInputLogMap = null;
+        try {
+            eventInputLogMap = getEventLogs(eventLogsPath);
+        } catch (FileNotFoundException e) {
+            log.error("File not found --- " + e.getMessage());
+            System.exit(1);
+        }
         if(!eventInputLogMap.isEmpty()) {
             ObjectMapper objectMapper = new ObjectMapper();
             return eventInputLogMap.values().parallelStream()
@@ -52,19 +55,15 @@ public class FileUtils {
         return new ArrayList<>();
     }
 
-    private static Map<String, JSONObject> getEventLogs(String eventLogsPath) {
+    private static Map<String, JSONObject> getEventLogs(String eventLogsPath) throws FileNotFoundException {
         Map<String, JSONObject> eventInputLogMap = new ConcurrentHashMap<>();
 
         /* Check if file is present in the path provided or not */
-        File file = getFile(eventLogsPath);
+        FileReader fileReader = getFileReader(eventLogsPath);
 
-        /* Build iterator by reading the file */
-        LineIterator it = getLineIterator(file);
-
-        /* Iterate and prepare Map of EventLog */
-        try {
-            while (it.hasNext()) {
-                String line = it.nextLine();
+        try (BufferedReader bufferedReader = new BufferedReader(fileReader)) {
+            String line;
+            while((line = bufferedReader.readLine()) != null) {
                 log.debug("Processing line: " + line);
                 JSONObject eventInputLog = new JSONObject(line);
                 if(isValidEventInputLogObject(eventInputLog)) {
@@ -74,13 +73,9 @@ public class FileUtils {
                     log.error("Invalid obj: " + line);
                 }
             }
-        } finally {
-            try {
-                it.close();
-            } catch (IOException e) {
-                log.error(e.getMessage());
-                System.exit(3);
-            }
+        } catch (IOException e) {
+            log.error(e.getMessage());
+            System.exit(3);
         }
 
         return eventInputLogMap;
@@ -102,24 +97,14 @@ public class FileUtils {
         return eventNewLog;
     }
 
-    private static LineIterator getLineIterator(File file) {
-        LineIterator it;
-        try {
-            it = org.apache.commons.io.FileUtils.lineIterator(file, StandardCharsets.UTF_8.toString());
-        } catch (IOException e) {
-            log.error("There was an error processing event logs file");
-            throw new RuntimeException(e);
-        }
-        return it;
-    }
-
-    private static File getFile(String eventLogsPath) {
+    private static FileReader getFileReader(String eventLogsPath) throws FileNotFoundException {
         Path eventFilePath = Paths.get(eventLogsPath);
         if (!Files.exists(eventFilePath)) {
             log.error("Event Log file doest not exist for the path:" + eventLogsPath);
             System.exit(2);
         }
-        return eventFilePath.toFile();
+
+        return new FileReader(eventLogsPath);
     }
 
     private static boolean isValidEventInputLogObject(JSONObject eventInputLog) {

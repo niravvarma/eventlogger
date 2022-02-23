@@ -3,6 +3,8 @@ package com.niravvarma.eventlogger.utils;
 import com.niravvarma.eventlogger.domain.EventLog;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+
+import java.io.FileNotFoundException;
 import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -10,7 +12,7 @@ public class FileUtilsTest {
 
     @Test
     @DisplayName("Test parseEventLogs() method - check if correct number of EventLog objects are returned")
-    void test_parseEventLogs_success() {
+    void test_parseEventLogs_success() throws FileNotFoundException {
         String filePath = ClassLoader.getSystemResource("eventlogs-test.txt").getPath();
         List<EventLog> lists = FileUtils.parseEventLogs(filePath);
         assertEquals(3, lists.size());
@@ -18,7 +20,7 @@ public class FileUtilsTest {
 
     @Test
     @DisplayName("Test parseEventLogs() method - check if zero number of EventLog objects are returned")
-    void test_parseEventLogs_failed() {
+    void test_parseEventLogs_failed() throws FileNotFoundException {
         /*This file contains just one dangling line, thus, no eventLog should be written*/
         String filePath = ClassLoader.getSystemResource("eventlogs-test-fail.txt").getPath();
         List<EventLog> lists = FileUtils.parseEventLogs(filePath);
@@ -27,7 +29,7 @@ public class FileUtilsTest {
 
     @Test
     @DisplayName("Test parseEventLogs() method - check if only 1 EventLog object is returned")
-    void test_parseEventLogs_failed2() {
+    void test_parseEventLogs_failed2() throws FileNotFoundException {
         /*This file contains 1 valid pair and one dangling line, thus, only 1 eventLog should be written*/
         String filePath = ClassLoader.getSystemResource("eventlogs-test-fail2.txt").getPath();
         List<EventLog> lists = FileUtils.parseEventLogs(filePath);
