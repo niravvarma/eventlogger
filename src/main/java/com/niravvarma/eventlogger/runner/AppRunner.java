@@ -21,14 +21,18 @@ public class AppRunner implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
+        String filePath;
         if (args == null || args.length != 1) {
-            throw new IllegalArgumentException("Please provide file path argument of the events log file in text format");
+            log.error("No argument present with filepath, using default file - eventlogs.txt from resources");
+            filePath = ClassLoader.getSystemResource("eventlogs.txt").getPath();
+        } else {
+            filePath = args[0];
         }
 
         // Start the clock
         long start = System.currentTimeMillis();
 
-        List<EventLog> eventLogList = FileUtils.parseEventLogs(args[0]);
+        List<EventLog> eventLogList = FileUtils.parseEventLogs(filePath);
         if(!eventLogList.isEmpty()) {
             log.debug(String.format("Saving event logs, total: %d", eventLogList.size()));
 

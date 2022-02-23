@@ -1,9 +1,8 @@
 package com.niravvarma.eventlogger.domain;
 
 import lombok.AllArgsConstructor;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-
 import javax.persistence.*;
+import java.util.Objects;
 
 @AllArgsConstructor
 @Entity
@@ -22,10 +21,6 @@ public class EventLog {
 
     public Long getId() {
         return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
     }
 
     public Long getDuration() {
@@ -61,9 +56,31 @@ public class EventLog {
     }
 
     @Override
-    public String toString()
-    {
-        return ToStringBuilder.reflectionToString(this);
+    public String toString() {
+        return "Event{" +
+                "eventId=" + id +
+                ", eventDuration='" + duration + '\'' +
+                ", eventType='" + type + '\'' +
+                ", eventHost='" + host + '\'' +
+                ", eventAlert=" + alert +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        EventLog event = (EventLog) o;
+        return duration.equals(event.duration) &&
+                alert == event.alert &&
+                id.equals(event.id) &&
+                Objects.equals(type, event.type) &&
+                Objects.equals(host, event.host);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, duration, type, host, alert);
     }
 
 }

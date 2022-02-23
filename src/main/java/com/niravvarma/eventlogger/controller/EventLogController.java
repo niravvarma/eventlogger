@@ -10,7 +10,7 @@ import java.util.concurrent.CompletableFuture;
 
 @RestController
 @RequestMapping("/events")
-class EventLogController {
+public class EventLogController {
 
     private EventLogService eventLogService;
 
