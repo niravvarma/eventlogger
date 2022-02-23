@@ -13,6 +13,7 @@ import java.util.concurrent.Executor;
 public class EventLoggerApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(EventLoggerApplication.class, args);
+		System.out.println("URL: http://localhost:8081/events/list");
 	}
 
 	@Bean
